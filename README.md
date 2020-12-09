@@ -3,7 +3,7 @@ The web-generator-toolkit2 software is a Perl script which processes [Apache JMe
 1. Time between requests [coefficient of variation](https://www.google.com/search?q=coefficient+of+variation&oq=coefficient+of+variation&aqs=chrome..69i57j0i67j0j0i67l3j0j0i67.1393j0j15&sourceid=chrome&ie=UTF-8) “cv” statistics for assessing the level of load tool request independence.
 2. User request concurrency calculations for estimating target system resource use maximums.
 
-This script extends the functionality of the [web-generator-toolkit](https://github.com/JFBrady/web-generator-toolkit) by adding two types of user request concurrency calculations
+It extends the functionality of the [web-generator-toolkit](https://github.com/JFBrady/web-generator-toolkit) by adding two types of user request concurrency calculations
 1. Statisical count of concurrent requests
 2. Proportion of time 0, 1, 2, etc. concurrent requests are present
 
