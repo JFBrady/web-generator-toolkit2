@@ -1962,10 +1962,10 @@ concurrency
 {
   my($concurrency_ref) = @_;
 
-  ###############################################
-  # User Request Concurrency Analysis:          #
-  # - Methodology Developed By Xiaosong Lou     #
-  ###############################################
+  #########################################################
+  # User Request Concurrency Analysis:                    #
+  # - Technique Introduced To This Author By Xiaosong Lou #
+  #########################################################
   my ($record);
   my (%timestamps);
   my ($timestamp);
@@ -1976,6 +1976,7 @@ concurrency
   my ($rt);
   my ($end);
   my ($msec);
+  my ($lastTimestamp);
   my ($ms);
   my ($count);
   my ($count_ms);
@@ -1992,7 +1993,6 @@ concurrency
   my ($pstate_count);
 
   my ($currentEvents)=0;
-  my ($lastTimestamp)=0;
   my ($msec_sum)=0;  
 
   ################################
@@ -2033,12 +2033,12 @@ concurrency
   }
 
   ###############################################
-  # Process timestamps in begin timestamp order #
+  # Process timestamps in ascending order       #
   ###############################################
-  foreach $timestamp (sort {$a<=>$b} (keys(%timestamps)))
+  foreach $timestamp (sort keys(%timestamps))
   {
     ###############################################
-    # Calculate msec for last timestamp         #
+    # Calculate msec for last timestamp           #
     ###############################################
     if ($lastTimestamp)
     {
@@ -2049,7 +2049,7 @@ concurrency
       $msec = 0;
     }
     ###############################################
-    # Add msec to current histogram entry       #
+    # Add msec to current histogram entry         #
     ###############################################
     if ($histogram{$currentEvents})
     {
@@ -2082,7 +2082,7 @@ concurrency
   ######################################################
   # Create state probability array                     #
   ######################################################
-  foreach $pstate_val (sort {$a<=>$b} (keys (%histogram)))
+  foreach $pstate_val (sort keys(%histogram))
   {
     ($count,$ms) = split('\,',$histogram{$pstate_val});
     $prob = $ms/$msec_sum;
