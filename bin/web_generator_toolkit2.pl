@@ -1990,7 +1990,6 @@ concurrency
   my (@pstate);
   my ($pstate_val);
   my ($i);
-  my ($pstate_count);
 
   my ($currentEvents)=0;
   my ($msec_sum)=0;  
@@ -2103,7 +2102,6 @@ concurrency
   ######################################################
   # Assign unobserved state probabilities zero         #
   ######################################################
-  $pstate_count=@pstate;
   for($i=0;$i<@pstate;$i++)
   {
     if (!$pstate[$i])
