@@ -43,6 +43,8 @@ This script uses jmeter csv output to produce arr,rt,byte,concur stats
 ##########################################################################
 require 5.004;
 use strict;
+use warnings;
+use Data::Dumper;
 use lib "$ENV{WEB_ACTION}";
 use Getopt::Std;
 use vars qw($opt_a $opt_b $opt_c $opt_d $opt_e $opt_f
@@ -486,7 +488,6 @@ foreach $infile (@$infile_list_ref)
      $web_bytes_ref,
      $response_1st_ms_ref) = create_data_lists(\@time_stamp);
 
-
     ##################################
     # Create concurrency Information #
     ##################################
@@ -551,15 +552,18 @@ foreach $infile (@$infile_list_ref)
     ################################
     # Concurrency Statistics       #
     ################################
-    $concurrency_ms_stats = create_statistics($web_event,
-                                              $datatime_ms,
-                                              $cv_or_vmr,
-                                              $prob1,
-                                              $prob2,
-                                              $prob3,
-                                              $concurrentEvents_ref);
-    push @concurrency_ms_list,$concurrency_ms_stats;
-    if ($opt_g) {push @{$graph_data{concur}},$concurrency_ms_stats;}
+    if (@$concurrentEvents_ref)
+    {
+      $concurrency_ms_stats = create_statistics($web_event,
+                                                $datatime_ms,
+                                                $cv_or_vmr,
+                                                $prob1,
+                                                $prob2,
+                                                $prob3,
+                                                $concurrentEvents_ref);
+      push @concurrency_ms_list,$concurrency_ms_stats;
+      if ($opt_g) {push @{$graph_data{concur}},$concurrency_ms_stats;}
+    }
 
     #############################################
     # Response_1st_ms Statistics                #
@@ -604,9 +608,12 @@ foreach $infile (@$infile_list_ref)
         ##########################################
         # Histogram Files                        #
         ##########################################
-        $outfile = join '_',$dir_infile1,$web_event,'concur';
+        $outfile = join '_',$web_event,'concur';
         $outfile = join '.',$outfile,'csv';
-        create_output_file($outdir_hist,'concur',$outfile,$state_probs_ref);
+	if (@$state_probs_ref)
+        {
+          create_output_file($outdir_hist,'concur',$outfile,$state_probs_ref);
+        }
       }
 
       #############################################
@@ -633,10 +640,12 @@ foreach $infile (@$infile_list_ref)
         ##########################################
         # Histogram Files                        #
         ##########################################
-        $outfile = join '_',$dir_infile1,$web_event,
-                            'arr',sprintf('%04d',$cell_size1);
+        $outfile = join '_',$web_event,'arr',sprintf('%04d',$cell_size1);
         $outfile = join '.',$outfile,'csv';
-        create_output_file($outdir_hist,'arr',$outfile,$arr_1h_ref);
+	if (@$arr_1h_ref)
+        {
+          create_output_file($outdir_hist,'arr',$outfile,$arr_1h_ref);
+        }
       }
 
       #############################################
@@ -663,10 +672,12 @@ foreach $infile (@$infile_list_ref)
         ##########################################
         # Histogram Files                        #
         ##########################################
-        $outfile = join '_',$dir_infile1,$web_event,
-                            'rt',sprintf('%04d',$cell_size2);
+        $outfile = join '_',$web_event,'rt',sprintf('%04d',$cell_size2);
         $outfile = join '.',$outfile,'csv';
-        create_output_file($outdir_hist,'rt',$outfile,$rt_1h_ref);
+	if (@$rt_1h_ref)
+        {
+          create_output_file($outdir_hist,'rt',$outfile,$rt_1h_ref);
+        }
       }
     }
 
@@ -1598,7 +1609,9 @@ get_successfail
   foreach $successfail (@$successfail_list_ref)
   {
     $total++;
-    if ($successfail eq 'false')
+    if ($successfail eq 'false' or 
+        $successfail eq 'False' or
+        $successfail eq 'FALSE')
     {
       $fail++; 
     }
@@ -1606,7 +1619,14 @@ get_successfail
   ################################
   # Compute Percent Fail         #
   ################################
-  $p_fail = 100*$fail/$total;
+  if ($total)
+  {
+    $p_fail = 100*$fail/$total;
+  }
+  else
+  {
+    $p_fail = 0;
+  }
   $p_fail = sprintf('%.2f',$p_fail);
 
   return($p_fail);
@@ -1681,7 +1701,14 @@ create_statistics
   #########################################
   # Calculate tps                         #
   #########################################
-  $tps = $n*1000/$datatime_ms_val;
+  if ($datatime_ms_val and $n > 1)
+  {
+    $tps = $n*1000/$datatime_ms_val;
+  }
+  else
+  {
+    $tps=0;
+  }
 
   #########################################
   # Calculate min and max                 #
@@ -1894,7 +1921,14 @@ histogram_horizontal
     else
     {
       ($cell,$freq) = split('\,',$hist_val); 
-      $prob = $freq/$count;
+      if ($count)
+      {
+        $prob = $freq/$count;
+      }
+      else
+      {
+        $prob = 0;
+      }
     }
     $cell_max = $cell;
     $freq_sum = $freq_sum+$freq;
@@ -2084,7 +2118,14 @@ concurrency
   foreach $pstate_val (sort keys(%histogram))
   {
     ($count,$ms) = split('\,',$histogram{$pstate_val});
-    $prob = $ms/$msec_sum;
+    if ($msec_sum)
+    {
+      $prob = $ms/$msec_sum;
+    }
+    else
+    {
+      $prob = 0;
+    }
     $count_prob = join ',',$count,$prob;
     $pstate[$pstate_val] = $count_prob;
   } 
